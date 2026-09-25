@@ -17,7 +17,7 @@ watermark = None
 if table_exists:
     watermark = spark.sql(f"SELECT MAX(fetched_at) AS wm FROM {SILVER_TABLE}").collect()[0]["wm"]
 
-where_clause = "exchange = 'Binance' AND symbol = 'BTCUSDT'"
+where_clause = "base_coin = 'BTC'"
 if watermark:
     where_clause += f" AND fetched_at > '{watermark}'"
 
