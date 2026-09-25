@@ -1,14 +1,25 @@
 from src.transformations.silver_profile import profile_fields
 
 GOOD_ROW = {
-    "exchange": "Binance", "symbol": "BTCUSDT", "base_coin": "BTC",
-    "rate": 6.897e-05, "predicted_rate": None, "interval_hours": 8,
+    "exchange": "Binance",
+    "symbol": "BTCUSDT",
+    "base_coin": "BTC",
+    "rate": 6.897e-05,
+    "predicted_rate": None,
+    "interval_hours": 8,
     "next_funding_time": "2026-09-18T08:00:00+00:00",
-    "updated_at": "2026-09-18T03:35:42.729+00:00", "margin_type": "linear",
-    "asset_class": "crypto", "mark_price": 77381.9,
+    "updated_at": "2026-09-18T03:35:42.729+00:00",
+    "fetched_at": "2026-09-18T03:36:00+00:00",
+    "margin_type": "linear",
+    "asset_class": "crypto",
+    "mark_price": 77381.9,
     "mark_price_updated_at": "2026-09-18T03:35:42.729+00:00",
-    "open_interest": 8408566417.09785, "market_cap_rank": 1, "age_seconds": 23,
-    "data_source": "supabase", "freshness_sla_seconds": 600, "is_stale": False,
+    "open_interest": 8408566417.09785,
+    "market_cap_rank": 1,
+    "age_seconds": 23,
+    "data_source": "supabase",
+    "freshness_sla_seconds": 600,
+    "is_stale": False,
 }
 
 
@@ -48,6 +59,13 @@ def test_cast_failure_on_malformed_timestamp():
 
     assert report["updated_at"]["cast_failure_count"] == 1
 
+def test_cast_failure_on_malformed_fetched_at():
+    bad_row = dict(GOOD_ROW)
+    bad_row["fetched_at"] = "not-a-timestamp"
+
+    report = profile_fields([bad_row])
+
+    assert report["fetched_at"]["cast_failure_count"] == 1
 
 def test_expected_null_on_nullable_field_not_flagged():
     row = dict(GOOD_ROW)
