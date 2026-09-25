@@ -1,11 +1,16 @@
 """
-Casts bronze rows into properly-typed silver rows.
+Cast Bronze values → typed values
+Run find_quality_issues() on the typed values
+Calculate poll_lag_seconds
+Return the cleaned Silver row
 """
 
 import json
 from datetime import datetime
 
 from src.transformations.silver_profile import FIELD_SPECS
+from src.transformations.quality_checks import find_quality_issues
+from src.transformations.silver_normalize import normalize_rate, annualize_rate
 
 
 def _cast_value(value, expected_type: str):
@@ -34,38 +39,11 @@ def _cast_value(value, expected_type: str):
     return None, True  # unknown expected_type
 
 
-def check_quality(row: dict) -> list[str]:
-    """
-    Sanity/cross-field checks, run on already-cast values.
-    """
-    issues = []
- 
-    interval_hours = row.get("interval_hours")
-    if interval_hours is not None and interval_hours <= 0:
-        issues.append("interval_hours_not_positive")
- 
-    age_seconds = row.get("age_seconds")
-    if age_seconds is not None and age_seconds <= 0:
-        issues.append("age_seconds_not_positive")
- 
-    updated_at = row.get("updated_at")
-    next_funding_time = row.get("next_funding_time")
-    fetched_at_raw = row.get("fetched_at")
- 
-    fetched_at = None
-    if fetched_at_raw is not None:
-        try:
-            fetched_at = datetime.fromisoformat(fetched_at_raw)
-        except (ValueError, TypeError):
-            pass
- 
-    if updated_at is not None and fetched_at is not None and updated_at > fetched_at:
-        issues.append("updated_at_after_fetched_at")
- 
-    if updated_at is not None and next_funding_time is not None and next_funding_time <= updated_at:
-        issues.append("next_funding_time_not_after_updated_at")
- 
-    return issues
+def compute_poll_lag_seconds(fetched_at, updated_at):
+    if fetched_at is None or updated_at is None:
+        return None
+
+    return (fetched_at - updated_at).total_seconds()
 
 
 def clean_row(bronze_row: dict) -> dict:
@@ -85,12 +63,27 @@ def clean_row(bronze_row: dict) -> dict:
         if failed:
             cast_issues.append(field)
 
-    cleaned["fetched_at"] = bronze_row.get("fetched_at")
     cleaned["silver_cast_issues"] = json.dumps(cast_issues)
-    cleaned["silver_quality_issues"] = json.dumps(check_quality(cleaned))
 
     cleaned["bronze_schema_extra_fields"] = bronze_row.get("schema_extra_fields")
     cleaned["bronze_schema_missing_fields"] = bronze_row.get("schema_missing_fields")
+
+    cleaned["rate_per_8h"] = normalize_rate(cleaned.get("rate"), cleaned.get("interval_hours"))
+    cleaned["rate_annualized"] = annualize_rate(cleaned.get("rate"), cleaned.get("interval_hours"))
+    cleaned["poll_lag_seconds"] = compute_poll_lag_seconds(cleaned.get("fetched_at"), cleaned.get("updated_at"))
+
+    cleaned["silver_quality_issues"] = json.dumps(
+        find_quality_issues(
+            rate=cleaned.get("rate"),
+            interval_hours=cleaned.get("interval_hours"),
+            mark_price=cleaned.get("mark_price"),
+            open_interest=cleaned.get("open_interest"),
+            fetched_at=cleaned.get("fetched_at"),
+            updated_at=cleaned.get("updated_at"),
+            next_funding_time=cleaned.get("next_funding_time"),
+            age_seconds=cleaned.get("age_seconds"),
+        )
+    )
 
     return cleaned
 

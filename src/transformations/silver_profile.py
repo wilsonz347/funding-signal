@@ -14,6 +14,7 @@ FIELD_SPECS = {
     "interval_hours": {"type": "int", "nullable": False},
     "next_funding_time": {"type": "datetime", "nullable": False},
     "updated_at": {"type": "datetime", "nullable": False},
+    "fetched_at": {"type": "datetime", "nullable": False},
     "margin_type": {"type": "str", "nullable": False},
     "asset_class": {"type": "str", "nullable": False},
     "mark_price": {"type": "float", "nullable": False},
@@ -23,7 +24,7 @@ FIELD_SPECS = {
     "age_seconds": {"type": "int", "nullable": False},
     "data_source": {"type": "str", "nullable": False},
     "freshness_sla_seconds": {"type": "int", "nullable": False},
-    "is_stale": {"type": "bool", "nullable": False},
+    "is_stale": {"type": "bool", "nullable": False}
 }
 
 
