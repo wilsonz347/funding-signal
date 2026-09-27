@@ -91,3 +91,45 @@ For example, Silver records casting failures in `silver_cast_issues` and value-l
 **Decision:** Test transformations using both representative market data and edge cases such as missing values, invalid intervals, and timestamp inconsistencies.
 
 **Why:** This verifies that the pipeline handles realistic source behavior instead of only working on ideal input.
+
+## 15. Gold layer: feature engineering
+
+**Decision:** Use Gold to create analysis-ready features from Silver, including funding-rate, open-interest, and price changes.
+
+**Why:** Silver contains cleaned observations, while Gold contains the features needed for downstream analysis and modeling.
+
+## 16. Historical context for Gold features
+
+**Decision:** Read a bounded amount of historical Silver data when processing new observations.
+
+**Why:** Features such as funding-rate changes and frozen-rate detection require previous observations. A bounded lookback provides the necessary context without reprocessing the entire dataset.
+
+## 17. Gold incremental processing
+
+**Decision:** Use the latest `fetched_at` timestamp in Gold as the watermark for incremental processing.
+
+**Why:** The current dataset is small enough that querying the Gold table for its latest timestamp is simple and sufficient.
+
+## 18. Time-series features by contract
+
+**Decision:** Calculate historical features separately for each `(exchange, symbol)`.
+
+**Why:** Funding rates and market behavior are contract-specific, so an observation should only be compared with the historical observations of the same contract.
+
+## 19. Gold transformations
+
+**Decision:** Keep Gold feature calculations in reusable Python modules and apply them to the incremental batch.
+
+**Why:** This keeps analytical logic separate from pipeline orchestration and makes the calculations easier to test and maintain.
+
+## 20. Idempotent Gold writes
+
+**Decision:** Use `(exchange, symbol, fetched_at)` as the Gold observation key and MERGE results into the Delta table.
+
+**Why:** The same batch may be processed more than once after a retry or failure. Idempotent writes prevent duplicate observations.
+
+## 21. `is_frozen` as a behavioral feature
+
+**Decision:** Treat `is_frozen` as a signal of repeated unchanged funding rates rather than automatically classifying the observation as bad data.
+
+**Why:** A funding rate remaining unchanged across several polls can reflect naturally low update frequency rather than a broken feed. The behavior can vary across exchanges.
