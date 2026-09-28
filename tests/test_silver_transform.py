@@ -69,7 +69,7 @@ def test_non_positive_interval_hours_flagged():
  
     row = clean_row(bad_row)
  
-    assert "interval_hours_not_positive" in json.loads(row["silver_quality_issues"])
+    assert "invalid_interval_hours" in json.loads(row["silver_quality_issues"])
  
  
 def test_non_positive_age_seconds_flagged():
@@ -78,7 +78,7 @@ def test_non_positive_age_seconds_flagged():
  
     row = clean_row(bad_row)
  
-    assert "age_seconds_not_positive" in json.loads(row["silver_quality_issues"])
+    assert "invalid_age_seconds" in json.loads(row["silver_quality_issues"])
  
  
 def test_updated_at_after_fetched_at_flagged():
