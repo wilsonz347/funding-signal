@@ -1,0 +1,163 @@
+# Semantic catalog for the funding-rate SQL agent.
+#
+# Used by:
+#   1. LLM: provides table, column, and semantic context
+#   2. SQL validator: defines the tables and columns the agent may query
+#   3. DQ checks: provides known freshness and data-quality thresholds
+
+version: 1
+
+tables:
+  - name: funding_regime_project.gold.funding_rate_analysis
+
+    purpose: >
+      Analysis-ready funding-rate data for BTC perpetual futures.
+      Use for questions about funding-rate levels, changes,
+      large funding moves, frozen rates, and relationships
+      between funding, open interest, and mark price.
+
+    description: >
+      One row per exchange, symbol, and poll timestamp.
+      The table contains normalized funding rates and
+      poll-to-poll analytical features derived from Silver data.
+
+    grain:
+      - exchange
+      - symbol
+      - fetched_at
+
+    columns:
+
+      exchange:
+        type: string
+        role: dimension
+        description: >
+          Exchange where the perpetual futures contract is traded.
+
+      symbol:
+        type: string
+        role: dimension
+        description: >
+          Exchange-specific contract symbol. Interpret together
+          with exchange because symbols are not standardized
+          across venues.
+
+      margin_type:
+        type: string
+        role: dimension
+        values:
+          - linear
+          - inverse
+        description: >
+          Contract margin type. Linear contracts are typically
+          USDT/USDC-margined; inverse contracts are coin-margined.
+
+      fetched_at:
+        type: timestamp
+        role: time
+        description: >
+          UTC timestamp when the pipeline polled the source and
+          observed the contract. This is the observation/poll time,
+          not the funding settlement time and not an ingestion timestamp.
+
+      rate_per_8h:
+        type: double
+        role: measure
+        unit: decimal_fraction
+        description: >
+          Funding rate normalized to an 8-hour basis.
+          Stored as a decimal fraction, not a percentage.
+          For example, 0.0001 represents 0.01% per 8 hours.
+
+      funding_change:
+        type: double
+        role: measure
+        nullable: true
+        description: >
+          Signed poll-to-poll change in rate_per_8h for the same
+          exchange and symbol. Calculated as the current
+          rate_per_8h minus the previous observation.
+          NULL when no previous funding rate is available.
+
+      is_large_move:
+        type: boolean
+        role: flag
+        nullable: true
+        description: >
+          True when the absolute funding_change is greater than
+          or equal to 0.00008. NULL when funding_change is NULL.
+        threshold:
+          operator: greater_than_or_equal
+          absolute_value: 0.00008
+
+      is_frozen:
+        type: boolean
+        role: flag
+        nullable: true
+        description: >
+          True when rate_per_8h is identical across the current
+          observation and the 5 preceding observations for the same
+          exchange and symbol. NULL when any required prior
+          observation is unavailable.
+        lookback_observations: 5
+
+      open_interest:
+        type: double
+        role: measure
+        nullable: true
+        description: >
+          Open interest at the observation time in the exchange's
+          native unit. Values are not directly comparable across
+          exchanges because units may differ.
+
+      oi_change:
+        type: double
+        role: measure
+        nullable: true
+        description: >
+          Signed poll-to-poll change in open_interest for the same
+          exchange and symbol. Calculated as current open_interest
+          minus the previous observation. NULL when either value
+          is unavailable.
+
+      mark_price:
+        type: double
+        role: measure
+        description: >
+          Mark price observed at fetched_at.
+
+      price_change:
+        type: double
+        role: measure
+        nullable: true
+        description: >
+          Signed poll-to-poll change in mark_price. Calculated as
+          current mark_price minus the previous observation.
+          NULL when no previous mark price is available.
+
+    time:
+      observation_column: fetched_at
+      ingestion_column: null
+
+    freshness:
+      expected_lag_minutes: 30
+
+policies:
+  read_only: true
+  allowed_tables_only: true
+  allowed_columns_only: true
+
+  # Maximum number of rows a generated SQL query may return
+  # before results are passed to the application layer.
+  max_query_rows: 10000
+
+  # Maximum number of rows passed directly into the LLM context.
+  # Large query results should be aggregated, summarized, or
+  # otherwise reduced before being included in the final prompt.
+  max_llm_rows: 50
+
+  # Encourage the agent to use aggregation for questions that
+  # do not require raw observations.
+  prefer_aggregation: true
+
+  default_time_window_days: 30
