@@ -1,3 +1,4 @@
+# src/validation/check_silver_funding_rates.py
 """
 Silver-layer sanity checks for funding_rates (silver).
 
