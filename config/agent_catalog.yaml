@@ -1,3 +1,4 @@
+# config/agent_catalog.yaml
 # Semantic catalog for the funding-rate SQL agent.
 #
 # Used by:
@@ -86,9 +87,6 @@ tables:
         description: >
           True when the absolute funding_change is greater than
           or equal to 0.00008. NULL when funding_change is NULL.
-        threshold:
-          operator: greater_than_or_equal
-          absolute_value: 0.00008
 
       is_frozen:
         type: boolean
@@ -99,7 +97,6 @@ tables:
           observation and the 5 preceding observations for the same
           exchange and symbol. NULL when any required prior
           observation is unavailable.
-        lookback_observations: 5
 
       open_interest:
         type: double

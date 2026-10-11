@@ -3,3 +3,7 @@ pytest
 databricks-sql-connector
 databricks-sdk
 python-dotenv
+pyyaml
+sqlglot
+httpx
+Flask
