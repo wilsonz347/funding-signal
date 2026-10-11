@@ -1,3 +1,8 @@
+# tests/test_funding_analysis.py
+"""
+Tests for src/transformations/gold_funding_analysis.py.
+"""
+
 from src.transformations.gold_funding_analysis import (
     LARGE_MOVE_THRESHOLD,
     calculate_funding_change,

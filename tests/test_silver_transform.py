@@ -1,3 +1,8 @@
+# tests/test_silver_transform.py
+"""
+Tests for src/transformations/silver_transform.py.
+"""
+
 import json
 
 from src.transformations.silver_transform import clean_row, clean_rows

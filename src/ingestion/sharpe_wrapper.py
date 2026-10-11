@@ -1,3 +1,5 @@
+# src/ingestion/sharpe_wrapper.py
+"""Wrapper around the Sharpe API client to handle rate-limit retries."""
 import time
 from src.ingestion.sharpe_client import fetch_current_funding_rates, SharpeAPIError
 

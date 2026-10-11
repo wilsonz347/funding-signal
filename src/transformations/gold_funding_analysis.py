@@ -1,3 +1,4 @@
+# src/transformations/gold_funding_analysis.py
 """
 Gold-layer funding-rate analysis.
 

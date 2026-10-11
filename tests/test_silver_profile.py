@@ -1,3 +1,8 @@
+# tests/test_silver_profile.py
+"""
+Tests for src/transformations/silver_profile.py.
+"""
+
 from src.transformations.silver_profile import profile_fields
 
 GOOD_ROW = {

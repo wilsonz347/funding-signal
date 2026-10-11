@@ -1,3 +1,4 @@
+# src/validation/cross_layer_validation.py
 """
 Cross-layer row reconciliation: bronze -> silver -> gold.
 

@@ -1,3 +1,5 @@
+# src/ingestion/sharpe_client.py
+"""Sharpe API client for fetching current funding rates."""
 import requests
 from datetime import datetime, timezone
 

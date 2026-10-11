@@ -1,3 +1,4 @@
+# src/validation/check_bronze_funding_rates.py
 """
 Bronze-layer sanity checks for funding_rates (bronze).
 

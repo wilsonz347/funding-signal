@@ -1,3 +1,4 @@
+# src/validation/check_gold_funding_analysis.py
 """
 Gold-layer sanity check: funding_rate_analysis.
 

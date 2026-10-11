@@ -1,3 +1,4 @@
+# src/transformations/silver_profile.py
 """
 Profiles bronze rows against a hypothesis of expected type/nullability
 per field to decide cleaning rules.
