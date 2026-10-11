@@ -112,7 +112,7 @@ def test_build_sql_prompt_includes_catalog_and_policies(catalog, now):
 
     assert "funding_regime_project.gold.funding_rate_analysis" in system
     assert "last 30 days" in system
-    assert "LIMIT no greater than 50" in system
+    assert f"LIMIT at most {catalog.max_llm_rows}" in system
     assert "rate_per_8h" in system
     assert "margin_type" in system
 
