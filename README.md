@@ -151,6 +151,40 @@ project/
 
 6. Check `GET /health` to confirm the API is responding.
 
+## Testing
+
+Run the unit tests:
+
+```bash
+pytest
+```
+
+Run the Databricks warehouse integration tests:
+
+```bash
+pytest tests/test_warehouse_integration.py
+```
+
+Integration tests require valid Databricks credentials and an available SQL warehouse. Configure the required environment variables before running them.
+
+Evaluate the SQL agent against the fixed validation set:
+
+```bash
+python scripts/evaluate_agent.py
+```
+
+The evaluation compares generated-query results against reference-query results for predefined natural-language questions. See `docs/agent_decisions.md` for the evaluation approach and its limitations.
+
+## Documentation
+
+- [`docs/data.md`](docs/data.md): API behavior, data coverage, and known quirks.
+- [`docs/decisions.md`](docs/decisions.md): Data pipeline architecture and design tradeoffs.
+- [`docs/agent_decisions.md`](docs/agent_decisions.md): SQL agent architecture, validation, evaluation, and limitations.
+
 ## Status
 
-The data pipeline and local SQL agent implementation are built. Known limitations and intentionally omitted features are documented above.
+## Status
+
+The project includes the Bronze/Silver/Gold data pipeline, incremental Delta processing, automated data validation, and a natural-language SQL agent with query validation and result evaluation. Unit and Databricks integration tests are included in the testing workflow.
+
+Known limitations and design tradeoffs are documented in the accompanying decision records.
