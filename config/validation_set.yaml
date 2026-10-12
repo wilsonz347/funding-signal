@@ -1,0 +1,34 @@
+# config/validation_set.yaml
+# Each case has a question, a trusted SQL query (expected_sql) and a rule for comparing results.
+# The evaluator runs expected_sql and the agent's SQL on Databricks and compares the rows.
+#   compare.key           columns that identify a row (real table columns, never aliases)
+#   compare.check_values  also compare numeric values (0.1% tolerance)
+version: 1
+
+cases:
+  - id: average_funding_by_exchange
+    question: "What is the average funding rate for each exchange over the last 7 days?"
+    expected_sql: |
+      SELECT exchange, AVG(rate_per_8h) AS avg_funding_rate
+      FROM funding_regime_project.gold.funding_rate_analysis
+      WHERE fetched_at >= current_timestamp() - INTERVAL 7 DAYS
+      GROUP BY exchange
+      ORDER BY avg_funding_rate DESC
+    compare:
+      key: [exchange]
+      check_values: true
+
+  - id: latest_funding_rate
+    question: "What is the latest funding rate for each exchange and symbol?"
+    expected_sql: |
+      WITH ranked AS (
+        SELECT exchange, symbol, rate_per_8h, fetched_at,
+               ROW_NUMBER() OVER (PARTITION BY exchange, symbol ORDER BY fetched_at DESC) AS rn
+        FROM funding_regime_project.gold.funding_rate_analysis
+      )
+      SELECT exchange, symbol, rate_per_8h, fetched_at
+      FROM ranked
+      WHERE rn = 1
+    compare:
+      key: [exchange, symbol]
+      check_values: true
