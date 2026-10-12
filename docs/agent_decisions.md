@@ -110,6 +110,16 @@ Unit tests use controlled inputs and mock dependencies to test agent behavior wi
 
 **Trade-off:** Passing unit tests does not prove that the live model consistently generates correct SQL or accurate explanations.
 
+### 9. Evaluate SQL Correctness
+
+Files: `config/validation_set.yaml`, `scripts/evaluate_agent.py`
+
+The evaluation layer defines fixed questions and reference SQL queries, executes both the reference and generated queries against Databricks, and compares their results.
+
+Why: Measures whether the agent's generated SQL produces the expected results on representative questions.
+
+Trade-off: Results can change as the underlying data changes.
+
 ## Future Improvements
 
 The API and agent currently run locally. Deployment requires choosing a hosted LLM endpoint or hosting the model separately, configuring production credentials, and deploying the API.
