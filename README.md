@@ -183,8 +183,6 @@ The evaluation compares generated-query results against reference-query results 
 
 ## Status
 
-## Status
-
 The project includes the Bronze/Silver/Gold data pipeline, incremental Delta processing, automated data validation, and a natural-language SQL agent with query validation and result evaluation. Unit and Databricks integration tests are included in the testing workflow.
 
 Known limitations and design tradeoffs are documented in the accompanying decision records.
